@@ -1,0 +1,77 @@
+server:
+  port: 8080
+
+eureka:
+  client:
+    enabled: false
+
+spring:
+  application:
+    name: EstateApp
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3307/estateapp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: ${MYSQL_ROOT_PASSWORD:Mck050604@}
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  flyway:
+    locations: classpath:/db/migration,classpath:/dev/db/migration
+    baseline-on-migrate: true
+    baseline-version: 2
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: khamai05767@gmail.com
+    password: ckcc dktp xqfz cshw
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+api:
+  prefix: /api/v1
+
+jwt:
+  expiration: 2592000 # 30days
+  expiration-refresh-token: 5184000
+  secretKey: e672a8b64e2a5ab5da300537341d7af496f0059c56838a9a7c634591d2ad6b71
+
+vnpay:
+  tmn_code: NQEXRUA7
+  hash_secret: VO80JER5TMM37D05B0CVP1G6TG48CEKI
+  url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+  return_url: http://localhost:8080/api/v1/payments/vnpay_return
+  return_client_url: http://localhost:5173/new-post?payment-status=
+
+
+google:
+  cloud:
+    credentials:
+      location: esateapp-backend/cred2.json
+
+logging:
+  file:
+    name: classpath:logs/application.log
+  level:
+    root: INFO
+    org:
+      springframework.security: DEBUG
+
