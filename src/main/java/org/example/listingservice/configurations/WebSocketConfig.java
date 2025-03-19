@@ -1,5 +1,6 @@
 package org.example.listingservice.configurations;
 
+import org.example.listingservice.interceptors.JwtAuthHandshakeInterceptor;
 import org.example.listingservice.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

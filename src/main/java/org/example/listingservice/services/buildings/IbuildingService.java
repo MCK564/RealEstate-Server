@@ -13,7 +13,7 @@ import java.util.Map;
 
 public interface IbuildingService {
     BuildingListResponse findByCondition(Map<String,Object> conditions, int page, int limit, List<String> type);
-    void deleteById(Long id);
+    void deleteById(Long id) throws DataNotFoundException;
 
     ResponseEntity<?> createOrUpdate(BuildingDTO dto) throws DataNotFoundException;
 

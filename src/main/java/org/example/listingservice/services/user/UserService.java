@@ -1,27 +1,33 @@
 package org.example.listingservice.services.user;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.example.listingservice.constant.MessageKeys;
 import org.example.listingservice.converter.Converter;
 import org.example.listingservice.dtos.PasswordDTO;
 import org.example.listingservice.dtos.RegisterDTO;
 import org.example.listingservice.dtos.UserDTO;
-import org.example.listingservice.repositories.ConversationRepository;
-import org.example.listingservice.repositories.UserRepository;
-import org.example.listingservice.responses.user.UserListResponse;
-import org.example.listingservice.utils.JwtUtils;
-import org.example.listingservice.utils.LocalizationUtils;
-import lombok.RequiredArgsConstructor;
-import org.example.listingservice.constant.MessageKeys;
 import org.example.listingservice.exceptions.DataNotFoundException;
 import org.example.listingservice.models.Conversation;
 import org.example.listingservice.models.Role;
+import org.example.listingservice.models.Token;
 import org.example.listingservice.models.User;
+import org.example.listingservice.repositories.ConversationRepository;
 import org.example.listingservice.repositories.RoleRepository;
+import org.example.listingservice.repositories.UserRepository;
 import org.example.listingservice.responses.user.LoginResponse;
+import org.example.listingservice.responses.user.UserListResponse;
 import org.example.listingservice.responses.user.UserResponse;
 import org.example.listingservice.services.DriveService;
+import org.example.listingservice.services.caches.CacheService;
 import org.example.listingservice.services.rabbitMQ.RabbitMQProducer;
 import org.example.listingservice.services.token.TokenService;
+import org.example.listingservice.utils.JwtUtils;
+import org.example.listingservice.utils.LocalizationUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
@@ -53,8 +59,10 @@ public class UserService implements IUserService{
     private final TokenService tokenService;
     private final RabbitMQProducer rabbitMQProducer;
     private final ConversationRepository conversationRepository;
+    private final CacheService cacheService;
 
     @Override
+    @Cacheable(value={"caffeineUsers","redisUsers"}, key="#keyword")
     public UserListResponse getAllByKeyword(String keyword, int page, int limit) {
         int totalPages = 0;
         PageRequest pageRequest = PageRequest.of(page,limit);
@@ -69,6 +77,7 @@ public class UserService implements IUserService{
     }
 
     @Override
+    @Cacheable(value={"caffeineUser","redisUser"}, key="#id")
     public UserResponse getById(Long id) throws DataNotFoundException {
         return UserResponse.fromUser(userRepository
                 .findById(id).orElseThrow(()->
@@ -76,8 +85,10 @@ public class UserService implements IUserService{
     }
 
     @Override
+    @CacheEvict(value={"caffeineUser","redisUser","caffeineUsers","redisUsers"},allEntries = true)
     public String deleteById(Long id) {
         if(userRepository.existsById(id)){
+
             userRepository.deleteById(id);
             return MessageKeys.DELETE_SUCCESSFULLY;
         }
@@ -85,6 +96,14 @@ public class UserService implements IUserService{
     }
 
     @Override
+    @Caching(
+            evict = {
+                    @CacheEvict(value = {"caffeineUsers","redisUsers"},allEntries = true, condition = "#dto.id != null ")
+            },
+            put = {
+                    @CachePut(value = {"caffeineUser", "redisUser"}, key="#dto.id", condition = "#dto.id != null ")
+            }
+    )
     public ResponseEntity<?> createOrUpdate(UserDTO dto) throws DataNotFoundException {
         User existingUser = userRepository
                 .findById(dto.getId()).orElseThrow(()->
@@ -97,6 +116,7 @@ public class UserService implements IUserService{
         }
         existingUser.setPhone(dto.getPhone());
         existingUser.setFullName(dto.getFullName());
+        cacheService.deleteUserFromCache(dto.getId());
         return ResponseEntity.ok().body(UserResponse.fromUser(userRepository.saveAndFlush(existingUser)));
     }
 
@@ -132,6 +152,7 @@ public class UserService implements IUserService{
         newUser.setRole(existingRole);
         newUser.setUsedPost(0L);
         newUser.setRemainPost(2L);
+        newUser.setTotalPaid(0.0);
 
         rabbitMQProducer.sendMailToQueue(dto);
 
@@ -185,8 +206,10 @@ public class UserService implements IUserService{
 
             //thêm mới token vào database
             String userAgent = request.getHeader("User-Agent");
-            tokenService.addToken(user,loginResponse.getToken(),isMobileDevice(userAgent));
+            Token savedToken = tokenService.addToken(user,loginResponse.getToken(),isMobileDevice(userAgent));
+            loginResponse.setRefreshToken(savedToken.getRefreshToken());
         }
+
         return loginResponse;
     }
 
@@ -228,5 +251,6 @@ public class UserService implements IUserService{
         }
         return true;
     }
+
 
 }

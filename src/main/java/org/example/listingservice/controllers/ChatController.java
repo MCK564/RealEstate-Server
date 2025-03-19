@@ -19,7 +19,7 @@ public class ChatController {
 
     @MessageMapping("/message")
     public ChatMessageResponse sendMessage(@Payload ChatMessageDTO dto) throws Exception {
-        Long  senderId = dto.getSenderId();
+        Long senderId = dto.getSenderId();
         Long receiverId = dto.getReceiverId();
 
         ChatMessageResponse response = (ChatMessageResponse) chatService.saveMessage(dto);
@@ -29,7 +29,6 @@ public class ChatController {
                 :  String.format("/chatroom/%s-%s", receiverId.toString(), senderId.toString());
 
         messagingTemplate.convertAndSend(chatRoom, response);
-
         return response;
     }
 
@@ -46,7 +45,6 @@ public class ChatController {
 //                "/private",
 //                response
 //        );
-//
 //        messagingTemplate.convertAndSendToUser(
 //                dto.getSenderId().toString(),
 //                "/private",
@@ -54,7 +52,5 @@ public class ChatController {
 //        );
 //        return response;
 //    }
-
-
 
 }

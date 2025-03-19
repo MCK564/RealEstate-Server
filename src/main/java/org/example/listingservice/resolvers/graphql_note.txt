@@ -1,0 +1,2 @@
+- Use the same name in schema.graphqls as response directory
+- Use @QueryMapping for query api, @SchemaMapping for

@@ -69,6 +69,7 @@ public class DriveService {
          return null;
         }
     }
+
     public void deleteImageFromDrive(String fileId) throws GeneralSecurityException, IOException {
         try {
             Drive drive = createDriveService();
@@ -78,6 +79,8 @@ public class DriveService {
             System.out.println("Error deleting file: " + e.getMessage());
         }
     }
+
+
     private Drive createDriveService() throws GeneralSecurityException, IOException {
         GoogleCredential credential = GoogleCredential
                 .fromStream(new FileInputStream(SERVICE_ACCOUNT_KEY_PATH))

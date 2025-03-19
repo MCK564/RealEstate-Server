@@ -4,6 +4,7 @@ package org.example.listingservice.services.token;
 import jakarta.transaction.Transactional;
 import org.example.listingservice.models.Token;
 import org.example.listingservice.repositories.TokenRepository;
+import org.example.listingservice.responses.token.TokenRefreshResponse;
 import org.example.listingservice.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.example.listingservice.exceptions.DataNotFoundException;
@@ -30,7 +31,7 @@ public class TokenService implements  ITokenService{
 
     @Transactional
     @Override
-    public Token refreshToken(String refreshToken, User user) throws Exception{
+    public TokenRefreshResponse refreshToken(String refreshToken) throws Exception{
         Token existingToken = tokenRepository.findByRefreshToken(refreshToken);
         if(existingToken == null) {
             throw new DataNotFoundException("Refresh token does not exist");
@@ -39,19 +40,23 @@ public class TokenService implements  ITokenService{
             tokenRepository.delete(existingToken);
             throw new ExpiredTokenException("Refresh token is expired");
         }
-        String token = jwtTokenUtil.generateToken(user);
+        String newAccessToken = jwtTokenUtil.generateToken(existingToken.getUser());
         LocalDateTime expirationDateTime = LocalDateTime.now().plusSeconds(expiration);
         existingToken.setExpirationDate(expirationDateTime);
-        existingToken.setToken(token);
-        existingToken.setRefreshToken(UUID.randomUUID().toString());
+        existingToken.setToken(newAccessToken);
         existingToken.setRefreshExpirationDate(LocalDateTime.now().plusSeconds(expirationRefreshToken));
-        return existingToken;
+
+        Token savedToken =  tokenRepository.saveAndFlush(existingToken);
+        return TokenRefreshResponse.builder()
+                .newAccessToken(savedToken.getToken())
+                .expirationDate(savedToken.getExpirationDate())
+                .build();
     }
 
     @Override
     @Transactional
     public void resetSystem() throws Exception{
-        tokenRepository.deleteAll();
+//        tokenRepository.deleteAll();
     }
 
     @Transactional

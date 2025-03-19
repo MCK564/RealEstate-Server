@@ -1,4 +1,4 @@
-package org.example.listingservice.configurations;
+package org.example.listingservice.interceptors;
 
 import org.example.listingservice.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import java.util.Map;
 public class JwtAuthHandshakeInterceptor implements HandshakeInterceptor {
 
     private final JwtUtils jwtUtils ;
-    private  final UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
 
 
     @Override

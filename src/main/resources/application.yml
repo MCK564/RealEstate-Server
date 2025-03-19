@@ -45,6 +45,11 @@ spring:
     port: 5672
     username: guest
     password: guest
+  graphql:
+    graphiql:
+      enabled: true
+  main:
+    allow-bean-definition-overriding: true
 
 api:
   prefix: /api/v1
@@ -62,6 +67,20 @@ vnpay:
   return_client_url: http://localhost:5173/new-post?payment-status=
 
 
+file:
+  server-url: http://localhost:8080
+  upload-dir: ./uploads/
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+
+
 google:
   cloud:
     credentials:
@@ -73,5 +92,23 @@ logging:
   level:
     root: INFO
     org:
-      springframework.security: DEBUG
+      springframework:
+        security: DEBUG
+        cache: TRACE
+
+
+
+
+graphql:
+  servlet:
+    max-query-depth: 5
+    mapping: /graphql
+    cors-enabled: true
+    exception-handlers-enabled: true
+  playground:
+    enabled: true
+  graphiql:
+    enabled: true
+
+
 

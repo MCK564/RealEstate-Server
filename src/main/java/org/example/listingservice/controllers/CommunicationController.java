@@ -2,6 +2,7 @@ package org.example.listingservice.controllers;
 
 import org.example.listingservice.constant.MessageKeys;
 import org.example.listingservice.dtos.CommunicationDTO;
+import org.example.listingservice.exceptions.DataNotFoundException;
 import org.example.listingservice.services.communication.CommunicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,20 +19,12 @@ public class CommunicationController {
             @RequestParam String keyword,
             @RequestParam  int page,
             @RequestParam int limit){
-        try{
             return ResponseEntity.ok().body(communicationService.getAllByKeyWord(keyword,page,limit));
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
 
     @PostMapping()
-    public ResponseEntity<?> createOrUpdate(@RequestBody CommunicationDTO dto){
-        try{
+    public ResponseEntity<?> createOrUpdate(@RequestBody CommunicationDTO dto) throws DataNotFoundException {
             return ResponseEntity.ok().body(communicationService.createOrUpdate(dto));
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
 
 
@@ -40,36 +33,17 @@ public class CommunicationController {
                                             @RequestParam(value = "buildingName",required = false)String buildingName,
                                              @RequestParam  int page,
                                              @RequestParam int limit){
-        try{
             return ResponseEntity.ok().body(communicationService.getAllBySaler_IDOrUserId(id,buildingName,page,limit));
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteById(@PathVariable("id")Long id){
-        try{
+    public ResponseEntity<?> deleteById(@PathVariable("id")Long id) throws DataNotFoundException {
             communicationService.deleteCommunication(id);
             return ResponseEntity.ok().body(MessageKeys.DELETE_SUCCESSFULLY);
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
 
     @GetMapping("/building/{id}")
-    public ResponseEntity<?> getAllByBuildingId(@PathVariable("id")Long id
-                                                ){
-        try{
+    public ResponseEntity<?> getAllByBuildingId(@PathVariable("id")Long id) throws DataNotFoundException {
             return ResponseEntity.ok().body(communicationService.getAllByBuildingId(id));
-        }catch(Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
-
-
-
-
-
-
 }

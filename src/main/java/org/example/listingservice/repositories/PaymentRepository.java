@@ -18,4 +18,10 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     @Query("SELECT p FROM Payment p WHERE FUNCTION('MONTH', p.createdAt) = :month AND FUNCTION('YEAR', p.createdAt) = :year")
     Page<Payment> findAllByMonthAndYear(@Param("month") int month, @Param("year") int year, Pageable pageable);
+
+    @Query("SELECT SUM(p.money) FROM Payment p WHERE p.status = :status AND month(p.createdAt) = :month AND year(p.createdAt) =:year")
+    Double getTotalRevenueByStatus (@Param("status") Integer status ,@Param("year") int year,@Param("month") int month);
+    @Query("SELECT p FROM Payment p WHERE FUNCTION('MONTH', p.createdAt) = :month AND FUNCTION('YEAR', p.createdAt) = :year")
+    List<Payment> findAllByMonthAndYear(@Param("month") int month, @Param("year") int year);
+
 }

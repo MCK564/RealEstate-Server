@@ -22,6 +22,9 @@ public class UserResponse {
     @JsonProperty("number_of_post")
     private int numberOfPost;
 
+    @JsonProperty("total_paid")
+    private Double totalPaid;
+
     public static UserResponse fromUser(User user){
         return UserResponse.builder()
                 .id(user.getId())
@@ -32,6 +35,9 @@ public class UserResponse {
                 .roleCode(user.getRole().getCode())
                 .avatar(user.getAvatar())
                 .numberOfPost(user.getBuildings().size())
+                .totalPaid(user.getTotalPaid())
                 .build();
     }
+
+
 }

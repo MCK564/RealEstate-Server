@@ -1,6 +1,5 @@
 package org.example.listingservice.controllers;
 
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.example.listingservice.dtos.ChatMessageDTO;
 import org.example.listingservice.exceptions.DataNotFoundException;
@@ -8,7 +7,6 @@ import org.example.listingservice.services.chat.ChatService;
 import org.example.listingservice.services.token.TokenService;
 import org.example.listingservice.utils.JwtUtils;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -36,11 +34,6 @@ public class ChatHistoryController {
     public ResponseEntity<?> getAllUserConnectedToMe(@RequestHeader("Authorization")String token,
                                                      @PathVariable("userId")Long userId)
     {
-//        token = token.substring(7);
-//        String userIdFromToken= jwtUtils.extractUserId(token);
-//        if(!userIdFromToken.equals(userId.toString()) ) {
-//            return ResponseEntity.status(403).body("You do not have permission to assess other accounts");
-//        }
         return ResponseEntity.ok(chatService.getAllConnectedByUserId(userId));
     }
 

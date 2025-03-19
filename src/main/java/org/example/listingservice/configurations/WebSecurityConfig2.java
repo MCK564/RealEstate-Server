@@ -26,6 +26,8 @@ public class WebSecurityConfig2 {
     @Value("${api.prefix}")
     private String apiPrefix;
 
+
+
 //    @Bean
 //    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
 //        http    .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
@@ -50,18 +52,17 @@ public class WebSecurityConfig2 {
 
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(requests -> requests
-
+                        .requestMatchers(POST, "/graphql").hasRole("ADMIN")
                         .requestMatchers("/ws/**").permitAll()
-
-
+                        .requestMatchers("/swagger-ui/**").authenticated()
+                        .requestMatchers("/swagger-ui.html").authenticated()
                         .requestMatchers(GET, String.format("%s/buildings/admin/search**", apiPrefix)).hasRole("ADMIN")
                         .requestMatchers(GET, String.format("%s/users/search**", apiPrefix)).hasRole("ADMIN")
-
-
                         .requestMatchers("/**").permitAll()
                 )
-
                 .csrf(AbstractHttpConfigurer::disable);
         return http.build();
     }
+
+
 }

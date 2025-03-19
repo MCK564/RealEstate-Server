@@ -74,13 +74,12 @@ public class JwtFilter extends OncePerRequestFilter {
         final List<Pair<String,String>> bypassTokens = Arrays.asList(
                 Pair.of(String.format("%s/users/login",apiPrefix),"POST"),
                 Pair.of(String.format("%s/users/register",apiPrefix),"POST"),
-                Pair.of(String.format("%s/users/refreshToken*", apiPrefix), "POST"),
+                Pair.of(String.format("%s/users/refresh-token", apiPrefix), "POST"),
                 Pair.of(String.format("%s/buildings/search",apiPrefix),"GET"),
                 Pair.of(String.format("%s/buildings/relations**",apiPrefix),"GET"),
                 Pair.of(String.format("%s/buildings/building-edit**", apiPrefix), "GET"),
                 Pair.of(String.format("%s/payments**",apiPrefix),"GET"),
-                Pair.of(String.format("%s/swagger-ui.html",apiPrefix),"GET"),
-                Pair.of(String.format("%s/vnpay_return**",apiPrefix),"GET" ),
+                Pair.of(String.format("%s/payments/vnpay_return**",apiPrefix),"GET" ),
                 Pair.of("/ws**", "GET"),
                 Pair.of("/test**","GET"),
                 Pair.of(String.format("%s/test**",apiPrefix),"GET")

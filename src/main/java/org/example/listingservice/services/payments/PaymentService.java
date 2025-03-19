@@ -1,6 +1,10 @@
 package org.example.listingservice.services.payments;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.listingservice.constant.MessageKeys;
 import org.example.listingservice.dtos.PaymentDTO;
 import org.example.listingservice.messages.PaymentMessage;
@@ -24,6 +28,9 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -38,6 +45,7 @@ public class PaymentService implements IPaymentService{
     private final HttpServletRequest request;
     private final MailService mailService;
     private final RabbitMQProducer rabbitMQProducer;
+
 
 
     @Value("${vnpay.return_client_url}")
@@ -58,8 +66,15 @@ public class PaymentService implements IPaymentService{
     @Value("${vnpay.return_url}")
     private String vnp_ReturnUrl;
 
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
 
+    public Boolean isOwner(Long id, String username){
+        return userRepository.findById(id)
+                .map(user -> user.getUsername().equals(username))
+                .orElse(false);
+    }
     public String createPaymentUrl(PaymentDTO paymentDTO) throws Exception{
         User existingUser = userRepository.findById(paymentDTO.getUserId()).orElse(null);
         if(existingUser==null){
@@ -161,7 +176,8 @@ public class PaymentService implements IPaymentService{
             Long orderId = Long.parseLong(params.get("vnp_TxnRef"));
             Payment existingPayment = paymentRepository.findById(orderId).get();
             User user = existingPayment.getUser();
-            user.setRemainPost(user.getRemainPost()+ existingPayment.getPosts());
+            user.setRemainPost(user.getRemainPost() + existingPayment.getPosts());
+            user.setTotalPaid(user.getTotalPaid() + existingPayment.getMoney());
             urlReturn.append("success&current-post=")
                     .append(user.getRemainPost());
             userRepository.save(user);
@@ -172,6 +188,7 @@ public class PaymentService implements IPaymentService{
                             .email(existingPayment.getEmail())
                             .id(existingPayment.getId())
                     .build());
+
         }
      return new RedirectView(urlReturn.toString());
     }
@@ -184,7 +201,7 @@ public class PaymentService implements IPaymentService{
         List<PaymentDetailResponse> responses = payments.getContent().stream().map(PaymentDetailResponse::fromPayment).toList();
         return PaymentListResponse.builder()
                 .totalPages(payments.getTotalPages())
-                .totalRevenue(PaymentListResponse.calculateTotalPaid(payments.getContent()))
+                .totalRevenue((double) PaymentListResponse.calculateTotalPaid(payments.getContent()).intValue())
                 .paymentResponses(responses)
                 .build();
     }
@@ -198,5 +215,42 @@ public class PaymentService implements IPaymentService{
                 .totalPaid(PaymentListResponse.calculateTotalPaid(payments))
                 .paymentResponses(response)
                 .build();
+    }
+
+    @Override
+    public Double getTotalRevenue(int year,int month) {
+        return paymentRepository.getTotalRevenueByStatus(1,year, month);
+    }
+
+    @Override
+    public String downloadExcelUrl(int year, int month)throws IOException {
+        List<Payment> payments = paymentRepository.findAllByMonthAndYear(month, year);
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("payments_" +month+"_"+year);
+
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("ID");
+        headerRow.createCell(1).setCellValue("User ID");
+        headerRow.createCell(2).setCellValue("Money");
+        headerRow.createCell(3).setCellValue("Email");
+        headerRow.createCell(4).setCellValue("Created At");
+
+        int rowIndex = 1;
+        for (Payment payment : payments) {
+            Row row = sheet.createRow(rowIndex++);
+            row.createCell(0).setCellValue(payment.getId());
+            row.createCell(1).setCellValue(payment.getUser() != null ? payment.getUser().getId() : null);
+            row.createCell(2).setCellValue(payment.getMoney());
+            row.createCell(3).setCellValue(payment.getEmail());
+            row.createCell(4).setCellValue(payment.getCreatedAt().toString());
+        }
+
+        File file = new File(uploadDir + "payments_"+month+"_"+year);
+        try (FileOutputStream fileOut = new FileOutputStream(file)) {
+            workbook.write(fileOut);
+        }
+        workbook.close();
+
+        return file.getAbsolutePath();
     }
 }

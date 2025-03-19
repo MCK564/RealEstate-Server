@@ -1,0 +1,72 @@
+type Query{
+    users: UserListResponse
+    user(id: ID!): UserResponse
+    buildings: BuildingEditListResponse
+    building(id: ID!): BuildingEditResponse
+}
+type BuildingEditListResponse{
+    totalPages: Int
+    buildingEditResponses: [BuildingEditResponse]
+}
+type UserListResponse{
+    totalPages: Int
+    userResponses: [UserResponse]
+}
+
+type BuildingEditResponse {
+    id: ID!
+    rentAreas: [Int]!
+    images: [String]!
+    likes: [UserResponse]!
+    name: String!
+    street: String!
+    ward: String!
+    district: String!
+    structure: String
+    numberOfBasement: Int
+    floorArea: Int
+    direction: String
+    level: String
+    rentPrice: Int
+    rentPriceDescription: String
+    serviceFee: String
+    carFee: String
+    motorbikeFee: String
+    overtimeFee: String
+    waterFee: String
+    electricityFee: String
+    deposit: String
+    payment: String
+    rentTime: String
+    decorationTime: String
+    brokerageFee: Float
+    note: String
+    linkOfBuilding: String
+    map: String
+    avatar: String
+    managerName: String
+    managerPhoneNumber: String
+    status: Int
+    type: String
+    ownerId: ID!
+    address: String
+    typeString: [String]
+    owner: UserResponse!
+}
+
+type UserResponse {
+    id: ID!
+    fullName: String!
+    email: String!
+    avatar: String
+}
+
+
+
+
+
+
+
+
+
+

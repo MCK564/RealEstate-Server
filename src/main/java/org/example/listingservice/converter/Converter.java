@@ -41,7 +41,7 @@ public class Converter {
                 .rentAreaFrom(MapUtils.getObject(conditions,"rentAreaFrom",Integer.class))
                 .rentAreaTo(MapUtils.getObject(conditions,"rentAreaTo",Integer.class))
                 .ownerName(MapUtils.getObject(conditions,"owner",String.class))
-                .type(type!= null ?type:null)
+                .type(type)
                 .managerName(MapUtils.getObject(conditions,"managerName",String.class))
                 .managerPhoneNumber(MapUtils.getObject(conditions,"managerPhoneNumber",String.class)).build();
     }

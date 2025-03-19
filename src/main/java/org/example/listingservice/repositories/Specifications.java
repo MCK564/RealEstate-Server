@@ -5,7 +5,10 @@ import org.example.listingservice.builders.BuildingSearchBuilder;
 import org.example.listingservice.models.Building;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class Specifications {
     public static Specification<Building> searchProductByConditions(BuildingSearchBuilder b, List<String> types) {
@@ -57,26 +60,51 @@ public class Specifications {
                 }
                 pr = cb.and(pr, typePr);
             }
-            query.orderBy(cb.desc(root.get("modifiedDate")));
+            Objects.requireNonNull(query).orderBy(cb.desc(root.get("modifiedDate")));
             return pr;
         };
     }
 
-    public static Specification<Building> getSomeRelateWithBuilding(Building b) {
-        return (root, query, cb) -> {
-            Predicate pr = cb.conjunction();
-            if (b.getName() != null && !b.getName().isEmpty()) {
-                pr = cb.or(pr, cb.like(root.get("name"),"%" + b.getName()+ "%" ));
+    public static Specification<Building> findBuildingByMultipleConditions(BuildingSearchBuilder b, List<String> type){
+        return (root, query, criteriaBuilder) ->{
+            Predicate predicate = criteriaBuilder.conjunction();
+
+            for(Field field: b.getClass().getDeclaredFields()){
+                String fieldName = field.getName();
+                field.setAccessible(true);
+                try{
+                    Object fieldValue = field.get(b);
+                    if(fieldValue != null){
+                        List<String> splitCondition = Arrays.asList(fieldValue.toString().split("[, ]+"));
+                        if(!fieldName.startsWith("rentArea")&&!fieldName.startsWith("rentPrice")) {
+                            if (field.getType().equals(String.class)) {
+                                predicate = criteriaBuilder.and(predicate, criteriaBuilder.like(root.get(fieldName), "%" + fieldValue + "%"));
+                            } else if (field.getType().equals(Long.class) || field.getType().equals(Integer.class) || field.getType().equals(Double.class)) {
+                                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get(fieldName), fieldValue));
+                            }
+                        }
+                    }
+                }catch(IllegalAccessException e){
+                    e.printStackTrace();
+                }
             }
-            if (b.getDistrict() != null && !b.getDistrict().isEmpty()) {
-                pr = cb.or(pr, cb.equal(root.get("district"), b.getDistrict()));
+
+            predicate = specialFunction(criteriaBuilder, root, predicate, b);
+
+            if (type != null && !type.isEmpty()) {
+                predicate = criteriaBuilder.and(predicate, root.get("type").in(type));
             }
-            if(b.getWard() != null && !b.getWard().isEmpty()){
-                pr = cb.or(pr, cb.like(root.get("ward"), "%" + b.getWard() + "%"));
-            }
-            query.orderBy(cb.desc(root.get("modifiedDate")));
-            return pr;
+
+            Objects.requireNonNull(query).orderBy(criteriaBuilder.desc(root.get("modifiedDate")));
+            return predicate;
         };
     }
+    private static Predicate specialFunction(jakarta.persistence.criteria.CriteriaBuilder criteriaBuilder,
+                                             jakarta.persistence.criteria.Root<Building> root,
+                                             Predicate predicate,
+                                             BuildingSearchBuilder b) {
 
+
+        return predicate;
+    }
 }

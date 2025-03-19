@@ -7,13 +7,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class TokenRefreshResponse {
-    private String jwt;
+    @JsonProperty("new_access_token")
+   private String newAccessToken;
 
-    @JsonProperty("refresh_token")
-    private String refreshToken;
+    @JsonProperty("expiration_date")
+    private LocalDateTime expirationDate;
 }

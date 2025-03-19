@@ -94,4 +94,9 @@ public class Building extends BaseEntity {
 
     private Integer status;
     private String type;
+
+    @Override
+    public String toString(){
+        return "";
+    }
 }
