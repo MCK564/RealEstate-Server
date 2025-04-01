@@ -2,7 +2,7 @@ cred.json
 ocr_cred.json
 ocr_cred2.json
 target/
-
+volume-data/
 
 .idea/
 *.iws

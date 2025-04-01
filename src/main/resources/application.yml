@@ -1,13 +1,15 @@
 server:
-  port: 8080
+  port: 8081
 
 eureka:
   client:
-    enabled: false
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka
 
 spring:
   application:
-    name: EstateApp
+    name: LISTING-SERVICE
+
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3307/estateapp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
     driver-class-name: com.mysql.cj.jdbc.Driver

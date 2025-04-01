@@ -35,22 +35,6 @@ public class ChatController {
 
 
 
-//    @MessageMapping("/private-message")
-//    @SendTo("/chatroom/public")
-//    public ChatMessageResponse receivePrivateMessage(@Payload ChatMessageDTO dto)throws Exception {
-//
-//        ChatMessageResponse response = (ChatMessageResponse) chatService.saveMessage(dto);
-//        messagingTemplate.convertAndSendToUser(
-//                dto.getReceiverId().toString(),
-//                "/private",
-//                response
-//        );
-//        messagingTemplate.convertAndSendToUser(
-//                dto.getSenderId().toString(),
-//                "/private",
-//                response
-//        );
-//        return response;
-//    }
+
 
 }

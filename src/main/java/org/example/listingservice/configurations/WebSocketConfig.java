@@ -22,6 +22,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public JwtAuthHandshakeInterceptor jwtAuthHandshakeInterceptor() {
         return new JwtAuthHandshakeInterceptor(jwtUtils, userDetailsService);
     }
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config){
         config.enableSimpleBroker("/chatroom", "user");
